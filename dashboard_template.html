@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cockpit Quick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Libre+Franklin:wght@400;500;600;700;800;900&display=swap">
+<style>
+/* Layout : bandeau logos + filtres, puis deux étages carte|magasin et classement|tableau, sections titrées en bandeau rouge Quick (Anton capitales comme quick.fr) */
+:root {
+  --bg: #F1EEEE;          /* gris chaud quick.fr */
+  --surface: #FFFFFF;
+  --surface-2: #F8F6F5;
+  --fg: #1E1012;
+  --muted: #6F6567;
+  --line: #E3E0DA;
+  --band: #E30017;        /* rouge Quick */
+  --band-fg: #FFFFFF;
+  --accent: #8E001B;      /* bordeaux quick.fr */
+  --red: #E30017;
+  --gold: #D99A00;        /* jaune frites, série impressions */
+  --up: #198737;
+  --up-bg: #E3F2E5;
+  --down: #C8001A;
+  --down-bg: #FDE4E7;
+  --map-0: #F3E9E9;
+  --map-1: #F3B0B7;
+  --map-2: #E30017;
+  --map-3: #64000A;
+  --wpp-bg: transparent;
+  --shadow: 0 1px 2px rgba(52,1,11,.05), 0 4px 14px rgba(52,1,11,.06);
+  --f-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --f-body: "Libre Franklin", "Franklin Gothic Medium", "Segoe UI", system-ui, sans-serif;
+  --r: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #140A0B; --surface: #1E1213; --surface-2: #29191A; --fg: #F6EFEF; --muted: #B8A8A9; --line: #3E2A2B;
+    --band: #B10014; --band-fg: #FFFFFF; --accent: #FF7A88; --red: #FF3347; --gold: #F2C14E;
+    --up: #5CC774; --up-bg: #1D3322; --down: #FF6B7A; --down-bg: #3D1418;
+    --map-0: #33201F; --map-1: #6E1A22; --map-2: #C0182B; --map-3: #FF5C6C;
+    --wpp-bg: #F6EFEF; --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #140A0B; --surface: #1E1213; --surface-2: #29191A; --fg: #F6EFEF; --muted: #B8A8A9; --line: #3E2A2B;
+  --band: #B10014; --band-fg: #FFFFFF; --accent: #FF7A88; --red: #FF3347; --gold: #F2C14E;
+  --up: #5CC774; --up-bg: #1D3322; --down: #FF6B7A; --down-bg: #3D1418;
+  --map-0: #33201F; --map-1: #6E1A22; --map-2: #C0182B; --map-3: #FF5C6C;
+  --wpp-bg: #F6EFEF; --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 14px/1.45 var(--f-body);
+  padding-inline: clamp(16px, 2.2vw, 32px); padding-block: 0 40px;
+}
+.wrap { max-width: 1680px; margin: 0 auto; display: grid; gap: 22px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- En-tête ---------- */
+header.top {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px;
+  padding-block: 18px 6px;
+}
+.logo { display: flex; align-items: center; border-radius: 12px; }
+.logo.wpp { background: var(--wpp-bg); padding: 8px 12px; }
+.logo img { display: block; }
+.logo.qk img { height: 84px; }
+.logo.wpp img { height: 30px; }
+.title { text-align: center; }
+.title h1 { font: 400 clamp(24px, 2.6vw, 36px)/1.05 var(--f-display); letter-spacing: .01em; color: var(--fg); }
+.title p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+.filters {
+  display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: start;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 18px 24px; box-shadow: var(--shadow);
+}
+.field { display: grid; gap: 5px; min-width: 0; }
+.field label, .eyebrow {
+  font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.field input, .field select {
+  height: 40px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface-2);
+  padding: 0 16px; min-width: 0; width: 100%;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); outline: none; }
+.f-dep { flex: 0 1 280px; }
+.f-store { flex: 0 1 400px; margin-right: auto; }
+.f-period { flex: 0 1 auto; margin-right: auto; gap: 8px; }
+.period-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip {
+  height: 34px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line);
+  background: var(--surface-2); cursor: pointer; font-weight: 700; font-size: 13px;
+}
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
+.period-row select { width: auto; height: 38px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface-2); padding: 0 10px; font-size: 13px; max-width: 100%; }
+.period-row .sep { color: var(--muted); }
+.btn-reset {
+  height: 42px; padding: 0 22px; border-radius: 999px; border: 0; cursor: pointer;
+  background: var(--fg); color: var(--bg); font-weight: 800;
+}
+.btn-reset:hover { background: var(--red); color: #fff; }
+.f-actions { flex: none; display: grid; gap: 14px; justify-items: end; }
+.f-theme { display: flex; align-items: center; gap: 14px; }
+.f-theme .eyebrow { font-size: 13px; }
+.theme-sw { display: inline-flex; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface-2); padding: 3px; height: 40px; }
+.theme-sw button { border: 0; background: transparent; border-radius: 999px; padding: 0 14px; font-weight: 700; font-size: 14px; cursor: pointer; color: var(--muted); }
+.theme-sw button:hover { color: var(--fg); }
+.theme-sw button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.period-note { font-size: 12px; color: var(--muted); }
+.warn {
+  margin: 0; padding: 12px 18px 12px 46px; border-radius: var(--r); position: relative;
+  background: var(--down-bg); color: var(--fg); border: 1.5px solid var(--red); font-size: 13px;
+}
+.warn::before { content: "!"; position: absolute; left: 14px; top: 11px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff; font-weight: 900; display: grid; place-items: center; font-size: 13px; }
+.warn[hidden] { display: none; }
+
+/* ---------- Sections ---------- */
+section.block { display: grid; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow); }
+.band {
+  background: var(--band); color: var(--band-fg);
+  font: 400 17px/1 var(--f-display); letter-spacing: .04em; text-transform: uppercase;
+  padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.band small { font: 700 12px/1.2 var(--f-body); letter-spacing: .02em; text-transform: none; opacity: .85; }
+.grid-2 { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.grid-2 > * { min-width: 0; }
+.grid-2.rank { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); }
+.cell { padding: 18px; }
+.cell + .cell { border-left: 1px solid var(--line); }
+.sub {
+  font: 400 14px/1 var(--f-display); letter-spacing: .05em; text-transform: uppercase; color: var(--fg);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.sub::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--red); }
+
+/* ---------- Carte ---------- */
+.map-wrap { position: relative; }
+#map { width: 100%; height: auto; display: block; aspect-ratio: 1 / 0.95; max-width: 100%; touch-action: none; }
+#map path.dep { fill: var(--map-0); stroke: var(--surface); stroke-width: .8; cursor: pointer; transition: opacity .2s; }
+#map path.dep:hover { stroke: var(--fg); stroke-width: 1.4; }
+#map path.dep.sel { stroke: var(--fg); stroke-width: 2.2; }
+#map.has-sel path.dep:not(.sel) { opacity: .45; }
+#map circle.st { fill: var(--fg); stroke: var(--surface); cursor: pointer; }
+#map circle.st.out { opacity: .2; }
+#map circle.st:hover { fill: var(--red); }
+#map .focus-ring { fill: none; stroke: var(--red); }
+#map .focus-dot { fill: var(--red); stroke: #fff; }
+@media (prefers-reduced-motion: no-preference) {
+  #map .focus-ring { animation: pulse 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes pulse { from { opacity: .9; transform: scale(.6); } to { opacity: 0; transform: scale(1.8); } }
+}
+.map-tools { position: absolute; top: 0; left: 0; display: grid; gap: 4px; }
+.map-tools button {
+  width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface);
+  cursor: pointer; font-weight: 800; font-size: 16px; line-height: 1;
+}
+.map-tools button:hover { border-color: var(--accent); }
+.legend { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); flex-wrap: wrap; margin-top: 8px; }
+.legend .ramp { width: 140px; height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--map-0), var(--map-1), var(--map-2), var(--map-3)); }
+.legend .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--fg); display: inline-block; }
+.legend .fdot { width: 11px; height: 11px; border-radius: 50%; background: var(--red); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--red); display: inline-block; }
+.tip {
+  position: fixed; pointer-events: none; z-index: 20; background: var(--fg); color: var(--bg);
+  padding: 8px 11px; border-radius: 10px; font-size: 12px; line-height: 1.35; max-width: 260px; box-shadow: var(--shadow);
+}
+.tip b { font-weight: 800; }
+
+/* ---------- Magasin ---------- */
+.store-head { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 14px; }
+.store-id { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.store-id .badge-logo { flex: none; display: grid; place-items: center; }
+.store-id .badge-logo img { height: 52px; display: block; }
+.store-id h2 { font: 400 26px/1.1 var(--f-display); letter-spacing: .01em; }
+.store-id p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.store-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.tag { border-radius: 999px; padding: 5px 12px; font-weight: 800; font-size: 12px; background: var(--surface-2); border: 1.5px solid var(--line); white-space: nowrap; }
+.tag.hot { background: var(--red); border-color: var(--red); color: #fff; }
+.why { font-size: 12.5px; color: var(--muted); margin: -6px 0 14px; }
+
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.kpi {
+  border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 12px 10px; background: var(--surface-2);
+  display: grid; gap: 6px; cursor: pointer; text-align: left; min-width: 0;
+}
+.kpi:hover { border-color: var(--accent); }
+.kpi[aria-pressed="true"] { border-color: var(--red); box-shadow: inset 0 0 0 1px var(--red); background: var(--surface); }
+.kpi .eyebrow { display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi .eyebrow i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.kpi .val { font: 400 28px/1 var(--f-display); letter-spacing: .01em; }
+.kpi svg { width: 100%; height: 40px; display: block; overflow: visible; }
+.kpi .meta { display: flex; justify-content: space-between; gap: 6px; font-size: 11.5px; color: var(--muted); align-items: center; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 8px; font-weight: 800; font-size: 11.5px; white-space: nowrap; }
+.pill.up { color: var(--up); background: var(--up-bg); }
+.pill.down { color: var(--down); background: var(--down-bg); }
+.pill.flat { color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); }
+
+.evo { margin-top: 18px; }
+.evo-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.evo-head .sub { margin: 0; }
+.evo-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.evo-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.evo-legend i { width: 18px; height: 0; border-top: 3px solid var(--red); display: inline-block; }
+.evo-legend i.prev { border-top: 2px dashed var(--muted); }
+.chart-box { position: relative; height: 250px; }
+
+/* ---------- Classement ---------- */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tile { border-radius: 12px; padding: 14px 16px; color: #fff; display: grid; gap: 4px; cursor: pointer; border: 0; text-align: left; min-width: 0; }
+.tile:hover { filter: brightness(1.06); }
+.tile .eyebrow { color: rgba(255,255,255,.85); }
+.tile .tname { font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile .tval { font: 400 30px/1 var(--f-display); }
+.tile .tmeta { font-size: 12px; opacity: .9; }
+.tile.t-top { background: #E30017; }
+.tile.t-prog { background: #198737; }
+.tile.t-low { background: #4A3F41; }
+.tile.t-drop { background: #8E001B; }
+.tile.empty { cursor: default; opacity: .7; }
+.top5 { margin-top: 18px; }
+.top5 .chart-box { height: 260px; }
+
+.table-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.table-tools input { height: 36px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface-2); padding: 0 14px; width: min(260px, 100%); }
+.table-tools .count { font-size: 12px; color: var(--muted); }
+.tbl { overflow: auto; max-height: 620px; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+thead th {
+  position: sticky; top: 0; z-index: 1; background: var(--band); color: var(--band-fg);
+  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  padding: 10px 8px; text-align: right; white-space: nowrap; cursor: pointer; user-select: none;
+}
+thead th:nth-child(-n+3) { text-align: left; }
+thead th[aria-sort="descending"]::after { content: " ▼"; font-size: 9px; }
+thead th[aria-sort="ascending"]::after { content: " ▲"; font-size: 9px; }
+tbody td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+tbody td:nth-child(-n+3) { text-align: left; }
+tbody td:nth-child(2) { font-weight: 700; max-width: 175px; overflow: hidden; text-overflow: ellipsis; }
+tbody td.rk { color: var(--muted); font-weight: 800; width: 1%; }
+tbody tr { cursor: pointer; }
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:hover { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+tbody tr.cur { background: color-mix(in srgb, var(--accent) 24%, var(--surface)); }
+td b { font-weight: 800; }
+
+footer { color: var(--muted); font-size: 12px; text-align: center; }
+
+@media (max-width: 1280px) {
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 1020px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .cell + .cell { border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (max-width: 640px) {
+  header.top { grid-template-columns: 1fr 1fr; }
+  .title { grid-column: 1 / -1; grid-row: 2; }
+  .logo.wpp { justify-self: end; }
+  .logo.qk img { height: 60px; } .logo.wpp img { height: 22px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tiles { grid-template-columns: 1fr; }
+  .f-dep, .f-store { max-width: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo qk"><img src="__LOGO_QUICK__" alt="Quick"></div>
+    <div class="title">
+      <h1>Cockpit performance magasins</h1>
+      <p id="subtitle">Fiches établissement · données hebdomadaires</p>
+    </div>
+    <div class="logo wpp"><img src="__LOGO_WPP__" alt="WPP Media"></div>
+  </header>
+
+  <form class="filters" id="filters" autocomplete="off">
+    <div class="field f-dep">
+      <label for="in-dep">Département</label>
+      <input id="in-dep" list="dl-dep" placeholder="Toute la France — tapez un nom ou un n°">
+      <datalist id="dl-dep"></datalist>
+    </div>
+    <div class="field f-store">
+      <label for="in-store">Magasin</label>
+      <input id="in-store" list="dl-store" placeholder="Ville, adresse ou code postal">
+      <datalist id="dl-store"></datalist>
+    </div>
+    <div class="field f-period">
+      <label for="sel-from">Période</label>
+      <div class="period-row" id="presets">
+        <button type="button" class="chip" data-w="4">4 sem.</button>
+        <button type="button" class="chip" data-w="12">12 sem.</button>
+        <button type="button" class="chip" data-w="26">26 sem.</button>
+        <button type="button" class="chip" data-w="52">52 sem.</button>
+        <button type="button" class="chip" data-w="ytd">Année en cours</button>
+      </div>
+      <div class="period-row">
+        <select id="sel-from" aria-label="Semaine de début"></select>
+        <span class="sep">→</span>
+        <select id="sel-to" aria-label="Semaine de fin"></select>
+      </div>
+      <span class="period-note" id="period-note"></span>
+    </div>
+    <div class="f-actions">
+      <div class="f-theme">
+        <span class="eyebrow" id="lbl-theme">Affichage</span>
+        <div class="theme-sw" id="theme-sw" role="group" aria-labelledby="lbl-theme">
+          <button type="button" data-t="auto" title="Suit le réglage de l'ordinateur">Auto</button>
+          <button type="button" data-t="light">Clair</button>
+          <button type="button" data-t="dark">Sombre</button>
+        </div>
+      </div>
+      <button type="button" class="btn-reset" id="btn-reset">Réinitialiser</button>
+    </div>
+  </form>
+  <p class="warn" id="warn" role="status" hidden></p>
+
+  <section class="block" aria-labelledby="t-perf">
+    <div class="band"><span id="t-perf">Performance par magasin</span><small id="scope-label">France entière</small></div>
+    <div class="grid-2">
+      <div class="cell map-wrap">
+        <div class="sub">Carte du réseau</div>
+        <div style="position:relative">
+          <svg id="map" viewBox="0 0 600 570" role="img" aria-label="Carte des restaurants Quick par département"></svg>
+          <div class="map-tools">
+            <button type="button" id="z-in" aria-label="Zoomer">+</button>
+            <button type="button" id="z-out" aria-label="Dézoomer">−</button>
+            <button type="button" id="z-fr" aria-label="Revenir à la France entière" title="France entière">⌂</button>
+          </div>
+        </div>
+        <div class="legend">
+          <span>Visites en magasin du département</span><span class="ramp"></span>
+          <span><span class="dot"></span> Magasin</span>
+          <span><span class="fdot"></span> Magasin affiché</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="store-head">
+          <div class="store-id">
+            <div class="badge-logo"><img src="__LOGO_QUICK__" alt=""></div>
+            <div style="min-width:0">
+              <h2 id="s-name">—</h2>
+              <p id="s-addr"></p>
+            </div>
+          </div>
+          <div class="store-tags" id="s-tags"></div>
+        </div>
+        <p class="why" id="s-why"></p>
+        <div class="sub">Indicateurs de la période</div>
+        <div class="kpis" id="kpis"></div>
+        <div class="evo">
+          <div class="evo-head">
+            <div class="sub" id="evo-title">Évolution hebdomadaire</div>
+            <div class="evo-legend">
+              <span><i></i> Période sélectionnée</span>
+              <span><i class="prev"></i> Période précédente</span>
+            </div>
+          </div>
+          <div class="chart-box"><canvas id="c-evo" aria-label="Évolution hebdomadaire de l'indicateur sélectionné"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="t-glob">
+    <div class="band"><span id="t-glob">Performance globale des magasins</span><small id="scope-label-2">France entière</small></div>
+    <div class="grid-2 rank">
+      <div class="cell">
+        <div class="sub">Classement de la période</div>
+        <div class="tiles" id="tiles"></div>
+        <div class="top5">
+          <div class="sub">Évolution des visites — top 5</div>
+          <div class="chart-box"><canvas id="c-top5" aria-label="Visites hebdomadaires des 5 premiers magasins"></canvas></div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="table-tools">
+          <div class="sub" style="margin:0">Tableau récapitulatif</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <span class="count" id="t-count"></span>
+            <input id="t-search" type="search" placeholder="Filtrer le tableau" aria-label="Filtrer le tableau">
+          </div>
+        </div>
+        <div class="tbl">
+          <table id="tbl">
+            <thead><tr>
+              <th data-k="rk" style="text-align:left">#</th>
+              <th data-k="n">Magasin</th>
+              <th data-k="cp" style="text-align:left">CP</th>
+              <th data-k="vis">Visites</th>
+              <th data-k="avg">Moy. / sem.</th>
+              <th data-k="ev">vs préc.</th>
+              <th data-k="imp">Impressions</th>
+              <th data-k="call">Appels</th>
+              <th data-k="itin">Itinéraires</th>
+              <th data-k="web">Visites web</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer id="foot"></footer>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const DATA = __DATA__;
+const GEO = __GEO__;
+
+const METRICS = [
+  { k: "imp", label: "Impressions", short: "Impressions", color: "--gold" },
+  { k: "vis", label: "Visites en magasin", short: "Visites", color: "--red" },
+  { k: "call", label: "Clics d'appel", short: "Appels", color: "--accent" },
+  { k: "itin", label: "Itinéraires", short: "Itinéraires", color: "--up" },
+  { k: "web", label: "Visites sur le site web", short: "Visites web", color: "--fg" },
+];
+const W = DATA.weeks.length;
+const S = DATA.stores;
+S.forEach((s, i) => { s.i = i; s.depName = DATA.deps[s.d] || s.d; });
+
+const state = { dep: null, store: null, from: Math.max(0, W - 12), to: W - 1, metric: "vis", sortK: "vis", sortDir: -1, q: "" };
+
+/* ---------- utilitaires ---------- */
+const $ = (id) => document.getElementById(id);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const nf = new Intl.NumberFormat("fr-FR");
+const fmt = (v) => v == null ? "—" : nf.format(Math.round(v));
+const fmtC = (v) => v == null ? "—" : v >= 1e6 ? (v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " M" : v >= 1e4 ? (v / 1e3).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " k" : nf.format(Math.round(v));
+const pct = (v) => v == null || !isFinite(v) ? "—" : (v > 0 ? "+" : "") + (v * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + " %";
+const pill = (v) => `<span class="pill ${v == null || !isFinite(v) ? "flat" : v > 0.0005 ? "up" : v < -0.0005 ? "down" : "flat"}">${pct(v)}</span>`;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const dParse = (s) => new Date(s + "T00:00:00");
+const dFmt = (d) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+const dShort = (d) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return [t.getUTCFullYear(), Math.ceil(((t - y0) / 864e5 + 1) / 7)];
+}
+const WEEKS = DATA.weeks.map((s) => { const d = dParse(s); const [y, n] = isoWeek(d); return { d, y, n, lab: `S${String(n).padStart(2, "0")} ${y}` }; });
+const weekEnd = (i) => new Date(WEEKS[i].d.getTime() + 6 * 864e5);
+// Couverture des visites : nb de magasins remontant des visites chaque semaine.
+// FULL = dernière semaine où au moins la moitié du réseau habituel remonte ; la vue par défaut s'y arrête.
+const VIS_N = WEEKS.map((_, i) => S.reduce((n, s) => n + (s.vis[i] > 0 ? 1 : 0), 0));
+const MED_N = [...VIS_N].sort((a, b) => a - b)[Math.floor(W / 2)];
+let FULL = W - 1;
+while (FULL > 0 && VIS_N[FULL] < 0.5 * MED_N) FULL--;
+const DEF_FROM = Math.max(0, FULL - 11);
+state.from = DEF_FROM; state.to = FULL;
+
+const sum = (a, f, t) => { let x = 0; for (let i = f; i <= t; i++) x += a[i]; return x; };
+function period() {
+  const L = state.to - state.from + 1;
+  const pf = state.from - L, pt = state.from - 1;
+  return { f: state.from, t: state.to, L, pf, pt, hasPrev: pf >= 0 };
+}
+// Magasin actif sur toute la plage (au moins 90 % des jours remontés)
+const active = (s, f, t) => sum(s.days, f, t) >= 0.9 * 7 * (t - f + 1);
+
+function stats(s, P) {
+  const o = { s };
+  METRICS.forEach(({ k }) => {
+    o[k] = sum(s[k], P.f, P.t);
+    o[k + "P"] = P.hasPrev ? sum(s[k], P.pf, P.pt) : null;
+    o[k + "E"] = o[k + "P"] ? o[k] / o[k + "P"] - 1 : null;
+  });
+  o.act = active(s, P.f, P.t);
+  o.actP = P.hasPrev && active(s, P.pf, P.pt);
+  o.avg = o.vis / P.L;
+  return o;
+}
+function scopeStores() { return state.dep ? S.filter((s) => s.d === state.dep) : S; }
+
+/* ---------- filtres ---------- */
+const depCodes = Object.keys(DATA.deps).filter((c) => S.some((s) => s.d === c)).sort();
+const depLabel = (c) => `${c} — ${DATA.deps[c]}`;
+$("dl-dep").innerHTML = depCodes.map((c) => `<option value="${esc(depLabel(c))}"></option>`).join("");
+const storeLabel = (s) => `${s.n} — ${s.cp} ${s.c}`;
+function fillStoreList() {
+  $("dl-store").innerHTML = scopeStores().map((s) => `<option value="${esc(storeLabel(s))}">${esc(s.st)}</option>`).join("");
+}
+const weekOpts = WEEKS.map((w, i) => `<option value="${i}">${w.lab} · ${dShort(w.d)}</option>`).join("");
+$("sel-from").innerHTML = weekOpts; $("sel-to").innerHTML = weekOpts;
+
+function parseDep(v) {
+  v = v.trim(); if (!v) return null;
+  const code = v.split(" ")[0].toUpperCase();
+  if (DATA.deps[code] && depCodes.includes(code)) return code;
+  const n = v.toLowerCase();
+  return depCodes.find((c) => DATA.deps[c].toLowerCase() === n || DATA.deps[c].toLowerCase().startsWith(n)) || undefined;
+}
+$("in-dep").addEventListener("change", (e) => {
+  const c = parseDep(e.target.value);
+  if (c === undefined) { e.target.value = state.dep ? depLabel(state.dep) : ""; return; }
+  setDep(c);
+});
+$("in-store").addEventListener("change", (e) => {
+  const v = e.target.value.trim();
+  if (!v) { state.store = null; render(); return; }
+  const s = S.find((x) => storeLabel(x) === v) || S.find((x) => (x.n + " " + x.cp + " " + x.st).toLowerCase().includes(v.toLowerCase()));
+  if (s) setStore(s.i); else e.target.value = state.store != null ? storeLabel(S[state.store]) : "";
+});
+$("presets").addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  const w = b.dataset.w;
+  state.to = W - 1;
+  if (w === "ytd") { const y = WEEKS[W - 1].d.getFullYear(); state.from = WEEKS.findIndex((x) => x.d.getFullYear() === y); }
+  else state.from = Math.max(0, W - +w);
+  render();
+});
+$("sel-from").addEventListener("change", (e) => { state.from = +e.target.value; if (state.from > state.to) state.to = state.from; render(); });
+$("sel-to").addEventListener("change", (e) => { state.to = +e.target.value; if (state.to < state.from) state.from = state.to; render(); });
+$("btn-reset").addEventListener("click", () => {
+  Object.assign(state, { dep: null, store: null, from: DEF_FROM, to: FULL, metric: "vis", q: "" });
+  $("t-search").value = ""; fillStoreList(); render(); zoomTo(null);
+});
+$("filters").addEventListener("submit", (e) => e.preventDefault());
+
+function setDep(code) {
+  state.dep = code; state.store = null;
+  fillStoreList(); render(); zoomTo(code);
+}
+function setStore(i) {
+  const s = S[i];
+  if (state.dep && s.d !== state.dep) { state.dep = s.d; fillStoreList(); zoomTo(s.d); }
+  state.store = i; render();
+}
+
+/* ---------- carte ---------- */
+const svg = d3.select("#map");
+const VW = 600, VH = 570;
+const proj = d3.geoConicConformal().parallels([44, 49]).rotate([-3, 0]).fitExtent([[10, 10], [VW - 10, VH - 10]], GEO);
+const path = d3.geoPath(proj);
+const gRoot = svg.append("g");
+const gDeps = gRoot.append("g");
+const gStores = gRoot.append("g");
+const gFocus = gRoot.append("g");
+S.forEach((s) => { s.xy = s.lat != null ? proj([s.lng, s.lat]) : null; });
+const depPaths = gDeps.selectAll("path").data(GEO.features).join("path")
+  .attr("class", "dep").attr("d", path)
+  .on("click", (e, f) => { const c = f.properties.code; if (depCodes.includes(c)) setDep(state.dep === c ? null : c); })
+  .on("mousemove", (e, f) => showTip(e, depTip(f.properties.code)))
+  .on("mouseleave", hideTip);
+const dots = gStores.selectAll("circle").data(S.filter((s) => s.xy)).join("circle")
+  .attr("class", "st").attr("cx", (s) => s.xy[0]).attr("cy", (s) => s.xy[1])
+  .on("click", (e, s) => { e.stopPropagation(); setStore(s.i); })
+  .on("mousemove", (e, s) => showTip(e, storeTip(s)))
+  .on("mouseleave", hideTip);
+let K = 1;
+// Molette = défilement de la page ; Ctrl + molette = zoom carte
+const zoom = d3.zoom().filter((e) => (e.type !== "wheel" || e.ctrlKey) && !e.button).scaleExtent([1, 24]).translateExtent([[0, 0], [VW, VH]]).on("zoom", (e) => {
+  K = e.transform.k; gRoot.attr("transform", e.transform); sizeMarks();
+});
+svg.call(zoom).on("dblclick.zoom", null);
+function sizeMarks() {
+  dots.attr("r", 2.6 / Math.sqrt(K)).attr("stroke-width", 0.6 / K);
+  depPaths.attr("stroke-width", null).style("stroke-width", (f) => (f.properties.code === state.dep ? 2.2 : 0.8) / K);
+  gFocus.selectAll(".focus-dot").attr("r", 7 / K).attr("stroke-width", 2.2 / K);
+  gFocus.selectAll(".focus-ring").attr("r", 12 / K).attr("stroke-width", 2.5 / K);
+}
+function zoomTo(code) {
+  const T = svg.transition().duration(650);
+  if (!code) { zoom.transform(T, d3.zoomIdentity); return; }
+  const f = GEO.features.find((x) => x.properties.code === code);
+  const [[x0, y0], [x1, y1]] = path.bounds(f);
+  const k = Math.min(18, 0.85 / Math.max((x1 - x0) / VW, (y1 - y0) / VH));
+  zoom.transform(T, d3.zoomIdentity.translate(VW / 2, VH / 2).scale(k).translate(-(x0 + x1) / 2, -(y0 + y1) / 2));
+}
+$("z-in").onclick = () => zoom.scaleBy(svg.transition().duration(300), 1.6);
+$("z-out").onclick = () => zoom.scaleBy(svg.transition().duration(300), 1 / 1.6);
+$("z-fr").onclick = () => { if (state.dep) setDep(null); else zoomTo(null); };
+
+const tip = $("tip");
+function showTip(e, html) {
+  tip.innerHTML = html; tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.hidden = true; }
+let depAgg = {}, curStats = new Map();
+function depTip(code) {
+  const a = depAgg[code];
+  if (!a) return `<b>${esc(code)} — ${esc(DATA.deps[code] || "")}</b><br>Aucun magasin`;
+  return `<b>${esc(code)} — ${esc(DATA.deps[code])}</b><br>${a.n} magasin${a.n > 1 ? "s" : ""} · ${fmt(a.vis)} visites<br>vs préc. ${pct(a.visP ? a.vis / a.visP - 1 : null)}`;
+}
+function storeTip(s) {
+  const o = curStats.get(s.i);
+  return `<b>${esc(s.n)}</b><br>${esc(s.st)}<br>${esc(s.cp)} ${esc(s.c)}<br>${fmt(o.vis)} visites · ${pct(o.visE)}`;
+}
+
+/* ---------- sparkline SVG ---------- */
+function spark(vals, color) {
+  const w = 160, h = 40, n = vals.length;
+  if (n < 2) return `<svg viewBox="0 0 ${w} ${h}"></svg>`;
+  const max = Math.max(...vals, 1), min = Math.min(...vals, 0);
+  const x = (i) => (i / (n - 1)) * w, y = (v) => h - 3 - ((v - min) / (max - min || 1)) * (h - 8);
+  const pts = vals.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  const avg = vals.reduce((a, b) => a + b, 0) / n;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="0,${h} ${pts.join(" ")} ${w},${h}" fill="${color}" fill-opacity=".14"></polygon>
+    <line x1="0" x2="${w}" y1="${y(avg)}" y2="${y(avg)}" stroke="${css("--muted")}" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+    <polyline points="${pts.join(" ")}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+    <circle cx="${x(n - 1)}" cy="${y(vals[n - 1])}" r="3.2" fill="${color}"></circle>
+  </svg>`;
+}
+
+/* ---------- graphiques ---------- */
+Chart.defaults.font.family = css("--f-body");
+Chart.defaults.font.size = 11;
+let chEvo, chTop;
+function baseOpts(extra = {}) {
+  const grid = css("--line"), tick = css("--muted");
+  return {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+    interaction: { mode: "index", intersect: false },
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: css("--fg"), titleColor: css("--bg"), bodyColor: css("--bg"), padding: 10, cornerRadius: 8,
+      callbacks: { label: (c) => ` ${c.dataset.label} : ${fmt(c.parsed.y)}` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: tick, maxRotation: 0, autoSkipPadding: 14 }, border: { color: grid } },
+      y: { beginAtZero: true, grid: { color: grid }, ticks: { color: tick, callback: (v) => fmtC(v) }, border: { display: false } },
+    },
+    ...extra,
+  };
+}
+function drawEvo(s, P) {
+  const m = METRICS.find((x) => x.k === state.metric);
+  const col = css(m.color);
+  const cur = s[m.k].slice(P.f, P.t + 1);
+  const prev = P.hasPrev ? s[m.k].slice(P.pf, P.pt + 1) : [];
+  const labels = WEEKS.slice(P.f, P.t + 1).map((w) => `${w.lab.slice(0, 3)} · ${dShort(w.d)}`);
+  const ds = [
+    { label: m.short, data: cur, borderColor: col, backgroundColor: col + "26", fill: true, tension: .3, borderWidth: 2.5, pointRadius: cur.length > 30 ? 0 : 3, pointBackgroundColor: col },
+    { label: m.short + " (préc.)", data: prev, borderColor: css("--muted"), borderDash: [5, 4], borderWidth: 1.6, pointRadius: 0, fill: false, tension: .3 },
+  ];
+  $("evo-title").textContent = `Évolution hebdomadaire — ${m.label}`;
+  if (chEvo) { chEvo.data.labels = labels; chEvo.data.datasets = ds; chEvo.options = baseOpts(); chEvo.update(); }
+  else chEvo = new Chart($("c-evo"), { type: "line", data: { labels, datasets: ds }, options: baseOpts() });
+}
+const TOP_COLORS = ["--red", "--gold", "--up", "--fg", "--muted"];
+function drawTop5(top, P) {
+  const labels = WEEKS.slice(P.f, P.t + 1).map((w) => `${w.lab.slice(0, 3)} · ${dShort(w.d)}`);
+  const ds = top.map((o, i) => {
+    const c = css(TOP_COLORS[i]);
+    return { label: o.s.n, data: o.s.vis.slice(P.f, P.t + 1), borderColor: c, backgroundColor: c, borderWidth: 2.2, tension: .3, pointRadius: labels.length > 30 ? 0 : 2.5 };
+  });
+  const opts = baseOpts();
+  opts.plugins.legend = { display: true, position: "bottom", labels: { color: css("--fg"), usePointStyle: true, pointStyle: "line", boxWidth: 18, padding: 14 } };
+  if (chTop) { chTop.data.labels = labels; chTop.data.datasets = ds; chTop.options = opts; chTop.update(); }
+  else chTop = new Chart($("c-top5"), { type: "line", data: { labels, datasets: ds }, options: opts });
+}
+
+/* ---------- rendu ---------- */
+function render() {
+  const P = period();
+  const all = S.map((s) => stats(s, P));
+  curStats = new Map(all.map((o) => [o.s.i, o]));
+  const scope = state.dep ? all.filter((o) => o.s.d === state.dep) : all;
+  const ranked = scope.filter((o) => o.vis > 0).sort((a, b) => b.vis - a.vis);
+  const scopeName = state.dep ? depLabel(state.dep) : "France entière";
+
+  // filtres
+  document.querySelectorAll("#presets .chip").forEach((b) => {
+    const w = b.dataset.w; let on;
+    if (w === "ytd") { const y = WEEKS[W - 1].d.getFullYear(); on = state.to === W - 1 && state.from === WEEKS.findIndex((x) => x.d.getFullYear() === y); }
+    else on = state.to === W - 1 && state.from === Math.max(0, W - +w);
+    b.setAttribute("aria-pressed", on);
+  });
+  $("sel-from").value = state.from; $("sel-to").value = state.to;
+  $("period-note").textContent = `Du ${dFmt(WEEKS[P.f].d)} au ${dFmt(weekEnd(P.t))} (${P.L} sem.)` +
+    (P.hasPrev ? ` · comparé au ${dFmt(WEEKS[P.pf].d)} – ${dFmt(weekEnd(P.pt))}` : " · pas de période précédente disponible");
+  const low = VIS_N.slice(Math.max(P.f, FULL + 1), P.t + 1);
+  $("warn").hidden = !low.length;
+  if (low.length) $("warn").innerHTML = `<b>Données de visites incomplètes après le ${dFmt(weekEnd(FULL))}.</b> Sur la période choisie, seuls ${Math.min(...low)} à ${Math.max(...low)} magasins remontent des visites en magasin chaque semaine (environ ${MED_N} habituellement). Les visites, classements et évolutions ne sont pas représentatifs après cette date ; impressions, appels, itinéraires et visites web restent consultables.`;
+  $("in-dep").value = state.dep ? depLabel(state.dep) : "";
+  $("scope-label").textContent = $("scope-label-2").textContent = `${scopeName} · ${scope.length} magasin${scope.length > 1 ? "s" : ""}`;
+
+  // magasin mis en avant
+  let focus = state.store != null ? curStats.get(state.store) : ranked[0];
+  if (!focus) focus = scope[0];
+  $("in-store").value = state.store != null ? storeLabel(S[state.store]) : "";
+  renderStore(focus, ranked, scopeName, P);
+
+  // carte
+  depAgg = {};
+  all.forEach((o) => { const a = depAgg[o.s.d] || (depAgg[o.s.d] = { n: 0, vis: 0, visP: 0 }); a.n++; a.vis += o.vis; a.visP += o.visP || 0; });
+  const vmax = d3.max(Object.values(depAgg), (a) => a.vis) || 1;
+  const ramp = d3.scaleLinear().domain([0, vmax * 0.15, vmax * 0.45, vmax]).range(["--map-0", "--map-1", "--map-2", "--map-3"].map(css)).clamp(true);
+  depPaths.style("fill", (f) => depAgg[f.properties.code] ? ramp(depAgg[f.properties.code].vis) : null)
+    .classed("sel", (f) => f.properties.code === state.dep);
+  svg.classed("has-sel", !!state.dep);
+  dots.classed("out", (s) => state.dep && s.d !== state.dep);
+  gFocus.selectAll("*").remove();
+  if (focus && focus.s.xy) {
+    gFocus.append("circle").attr("class", "focus-ring").attr("cx", focus.s.xy[0]).attr("cy", focus.s.xy[1]);
+    gFocus.append("circle").attr("class", "focus-dot").attr("cx", focus.s.xy[0]).attr("cy", focus.s.xy[1]);
+  }
+  sizeMarks();
+
+  renderRanking(scope, ranked, P);
+  renderTable(scope, focus);
+}
+
+let focusStore = null;
+function renderStore(o, ranked, scopeName, P) {
+  if (!o) return;
+  const s = o.s;
+  focusStore = s;
+  const rank = ranked.indexOf(o) + 1;
+  $("s-name").textContent = s.n;
+  $("s-addr").textContent = `${s.st} — ${s.cp} ${s.c} · ${s.d} ${s.depName}`;
+  $("s-tags").innerHTML = (rank ? `<span class="tag hot">#${rank} visites</span>` : "") +
+    `<span class="tag">${rank ? `sur ${ranked.length}` : "Aucune visite"} · ${esc(state.dep ? s.depName : "France")}</span>` +
+    (o.act ? "" : `<span class="tag">Données partielles</span>`);
+  $("s-why").textContent = state.store != null ? `Magasin sélectionné. Classement calculé sur ${scopeName}.`
+    : state.dep ? `Magasin le plus visité du département ${scopeName} sur la période.` : "Magasin le plus visité de France sur la période. Choisissez un département ou un magasin pour changer la vue.";
+
+  $("kpis").innerHTML = METRICS.map((m) => {
+    const col = css(m.color);
+    const vals = s[m.k].slice(P.f, P.t + 1);
+    return `<button type="button" class="kpi" data-k="${m.k}" aria-pressed="${state.metric === m.k}">
+      <span class="eyebrow" title="${m.label}"><i style="background:${col}"></i>${m.short}</span>
+      <span class="val num">${m.k === "imp" ? fmtC(o[m.k]) : fmt(o[m.k])}</span>
+      ${spark(vals, col)}
+      <span class="meta"><span>vs préc.</span>${pill(o[m.k + "E"])}</span>
+      <span class="meta"><span>Moy. / sem.</span><b class="num">${fmtC(o[m.k] / P.L)}</b></span>
+    </button>`;
+  }).join("");
+  drawEvo(s, P);
+}
+$("kpis").addEventListener("click", (e) => {
+  const b = e.target.closest(".kpi"); if (!b) return;
+  state.metric = b.dataset.k;
+  document.querySelectorAll(".kpi").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  if (focusStore) drawEvo(focusStore, period());
+});
+
+function tile(cls, eyebrow, o, val, meta) {
+  if (!o) return `<div class="tile ${cls} empty"><span class="eyebrow">${eyebrow}</span><span class="tname">—</span><span class="tval">—</span><span class="tmeta">Pas assez de données sur la période</span></div>`;
+  return `<button type="button" class="tile ${cls}" data-i="${o.s.i}"><span class="eyebrow">${eyebrow}</span><span class="tname">${esc(o.s.n)}</span><span class="tval num">${val}</span><span class="tmeta">${meta}</span></button>`;
+}
+function renderRanking(scope, ranked, P) {
+  const full = scope.filter((o) => o.act);
+  const comparable = full.filter((o) => o.actP && o.visP >= 30 * P.L);
+  const byEv = [...comparable].sort((a, b) => b.visE - a.visE);
+  const top = ranked[0], low = [...full].sort((a, b) => a.vis - b.vis)[0];
+  const best = byEv[0], worst = byEv[byEv.length - 1];
+  $("tiles").innerHTML =
+    tile("t-top", "Plus de visites", top, top && fmt(top.vis), top && `${pct(top.visE)} vs période préc.`) +
+    tile("t-prog", "Meilleure progression", best, best && pct(best.visE), best && `${fmt(best.vis)} visites (préc. ${fmt(best.visP)})`) +
+    tile("t-low", "Moins de visites", low, low && fmt(low.vis), low && `${pct(low.visE)} vs période préc.`) +
+    tile("t-drop", worst && worst.visE > 0 ? "Plus faible progression" : "Plus forte baisse", byEv.length > 1 ? worst : null, worst && pct(worst.visE), worst && `${fmt(worst.vis)} visites (préc. ${fmt(worst.visP)})`);
+  drawTop5(ranked.slice(0, 5), P);
+}
+$("tiles").addEventListener("click", (e) => { const b = e.target.closest("[data-i]"); if (b) setStore(+b.dataset.i); });
+
+function renderTable(scope, focus) {
+  const q = state.q.toLowerCase();
+  const rankMap = new Map([...scope].sort((a, b) => b.vis - a.vis).map((o, i) => [o.s.i, i + 1]));
+  let rows = scope.filter((o) => !q || (o.s.n + " " + o.s.cp + " " + o.s.st + " " + o.s.depName).toLowerCase().includes(q));
+  const k = state.sortK, d = state.sortDir;
+  const val = (o) => k === "rk" ? rankMap.get(o.s.i) : k === "n" ? o.s.n : k === "cp" ? o.s.cp : k === "ev" ? (o.visE ?? -Infinity) : o[k];
+  rows.sort((a, b) => { const x = val(a), y = val(b); return (typeof x === "string" ? x.localeCompare(y, "fr") : x - y) * d; });
+  document.querySelectorAll("#tbl th").forEach((th) => th.setAttribute("aria-sort", th.dataset.k === k ? (d < 0 ? "descending" : "ascending") : "none"));
+  $("tbl").tBodies[0].innerHTML = rows.map((o) => `<tr data-i="${o.s.i}" class="${focus && o.s.i === focus.s.i ? "cur" : ""}">
+    <td class="rk">${rankMap.get(o.s.i)}</td><td title="${esc(o.s.st)}">${esc(o.s.n)}</td><td>${o.s.cp}</td>
+    <td><b>${fmt(o.vis)}</b></td><td>${fmt(o.avg)}</td><td>${pill(o.visE)}</td>
+    <td>${fmtC(o.imp)}</td><td>${fmt(o.call)}</td><td>${fmt(o.itin)}</td><td>${fmt(o.web)}</td></tr>`).join("");
+  $("t-count").textContent = `${rows.length} magasin${rows.length > 1 ? "s" : ""}`;
+}
+$("tbl").tHead.addEventListener("click", (e) => {
+  const th = e.target.closest("th"); if (!th) return;
+  const k = th.dataset.k;
+  if (state.sortK === k) state.sortDir *= -1; else { state.sortK = k; state.sortDir = ["n", "cp", "rk"].includes(k) ? 1 : -1; }
+  render();
+});
+$("tbl").tBodies[0].addEventListener("click", (e) => {
+  const tr = e.target.closest("tr"); if (!tr) return;
+  setStore(+tr.dataset.i);
+  document.querySelector("section.block").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+});
+$("t-search").addEventListener("input", (e) => { state.q = e.target.value; render(); });
+
+// Thème : on redessine les graphiques quand le mode clair/sombre change
+function redrawTheme() { chEvo?.destroy(); chTop?.destroy(); chEvo = chTop = null; render(); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redrawTheme);
+
+// Choix clair / sombre / auto, mémorisé dans le navigateur
+function setTheme(t, redraw = true) {
+  if (t === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+  document.querySelectorAll("#theme-sw button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.t === t));
+  try { localStorage.setItem("quick-theme", t); } catch (e) {}
+  if (redraw) redrawTheme();
+}
+$("theme-sw").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setTheme(b.dataset.t); });
+let savedTheme = "auto";
+try { savedTheme = localStorage.getItem("quick-theme") || "auto"; } catch (e) {}
+setTheme(savedTheme, false);
+
+$("subtitle").textContent = `${S.length} magasins · données hebdomadaires du ${dFmt(WEEKS[0].d)} au ${dFmt(dParse(DATA.lastDay))}`;
+$("foot").textContent = `Source : fiches établissement Quick (export journalier agrégé par semaine du lundi au dimanche). Dernière semaine complète : ${WEEKS[W - 1].lab}. Évolutions calculées vs la période de même durée immédiatement précédente.`;
+fillStoreList();
+render();
+</script>
+</body>
+</html>

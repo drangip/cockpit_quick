@@ -1,0 +1,7 @@
+# Export brut client : ne pas versionner
+data/*.csv
+!data/geocode_magasins.csv
+~$*
+__pycache__/
+.claude/
+.vercel/
